@@ -32,14 +32,6 @@
       "rdap": "https://rdap.verisign.com/com/v1/domain/"
     },
     {
-      "tld": "com.br",
-      "descricao": "Para quem tem CPF ou CNPJ e atua no Brasil.",
-      "modo": "externo",
-      "parceiro": "Registro.br",
-      "link": "https://registro.br/busca-dominio/?fqdn={dominio}",
-      "rdap": "https://rdap.registro.br/domain/"
-    },
-    {
       "tld": "net",
       "descricao": "Boa alternativa quando o .com já tem dono.",
       "modo": "afiliado",

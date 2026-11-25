@@ -42,8 +42,9 @@ export function validarNome(texto, extensoes) {
     }
   }
 
+  // Extensão que o site não oferece (ex.: "meusite.com.br"): pesquisa só o nome
   if (nome.includes(".")) {
-    return { ok: false, erro: "Use só letras, números e hífen, sem pontos." };
+    nome = nome.split(".")[0];
   }
 
   if (!/^[a-z0-9-]+$/.test(nome)) {
