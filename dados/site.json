@@ -8,30 +8,27 @@
     "logoAlt": "Zart",
     "favicon": "assets/img/favicon.png"
   },
-
   "empresa": {
+    "responsavel": "",
+    "email": "",
     "razaoSocial": "",
     "cnpj": "",
     "endereco": "",
-    "email": "",
     "encarregadoLGPD": ""
   },
-
   "api": {
     "url": ""
   },
-
   "analytics": {
     "googleAnalyticsId": ""
   },
-
   "extensoes": [
     {
       "tld": "com",
       "descricao": "A extensão mais conhecida do mundo.",
-      "modo": "revenda",
-      "preco": 69.90,
-      "renovacao": 69.90,
+      "modo": "afiliado",
+      "parceiro": "Parceiro",
+      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
       "rdap": "https://rdap.verisign.com/com/v1/domain/"
     },
     {
@@ -45,9 +42,9 @@
     {
       "tld": "net",
       "descricao": "Boa alternativa quando o .com já tem dono.",
-      "modo": "revenda",
-      "preco": 79.90,
-      "renovacao": 79.90,
+      "modo": "afiliado",
+      "parceiro": "Parceiro",
+      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
       "rdap": "https://rdap.verisign.com/net/v1/domain/"
     },
     {

@@ -1,6 +1,11 @@
 # Zart Domínios
 
-Primeiro projeto do grupo **Zart**. Site para pesquisar e vender domínios (afiliado + revenda).
+Primeiro projeto do grupo **Zart**. Site para pesquisar domínios e indicar onde registrar.
+
+> **Modo atual: só afiliado.** Não precisa de CNPJ, servidor nem dinheiro.
+> A compra é feita no parceiro e você ganha comissão.
+> O código da revenda (Python, Mercado Pago, Dynadot) continua no projeto para usar no futuro:
+> para ligar, coloque `"modo": "revenda"` e os preços nas extensões, e siga "Como colocar a revenda no ar".
 
 Funciona de dois jeitos:
 
@@ -63,7 +68,7 @@ Tudo fica em **`dados/site.json`**:
 | Nome do site | `identidade.nome` (hoje "Zart Domínios"). `submarca` é o texto ao lado da logo e `grupo` aparece no rodapé |
 | Logo | Coloque o arquivo em `assets/img/` e mude `identidade.logo` |
 | Ícone da aba (logo na URL) | `identidade.favicon` (coroa + Z). Para celular existe também o `apple-touch-icon.png` |
-| Dados da empresa (rodapé e políticas) | `empresa` |
+| Seu nome e e-mail (rodapé e políticas) | `empresa.responsavel` e `empresa.email`. No modo afiliado, só esses dois aparecem. Razão social, CNPJ e endereço só aparecem se houver revenda |
 | Preços de revenda | `preco` e `renovacao` de cada extensão |
 | Link de afiliado | `link` da extensão. Use `{dominio}` onde entra o domínio pesquisado |
 | Ligar o back-end | `api.url` (ex.: `https://api.seudominio.com.br`) |
@@ -169,9 +174,9 @@ Outros cuidados:
 | 1 | Política de privacidade | ✅ `privacidade.html` |
 | 2 | Termos de serviço | ✅ `termos.html` |
 | 3 | Aviso de cookies | ✅ Caixa de escolha na primeira visita + "Preferências de cookies" no rodapé |
-| 4 | Política de reembolso | ✅ `reembolso.html`, com os 7 dias do art. 49 do CDC |
+| 4 | Política de reembolso | ✅ `reembolso.html`: explica que o reembolso é com o parceiro e cita os 7 dias do art. 49 do CDC |
 | 5 | Formulários na LGPD | ✅ Caixa de consentimento e link para a política em todos os formulários |
-| 6 | Só dados necessários | ✅ Compra: nome, e-mail e CPF/CNPJ. Contato: nome, e-mail e mensagem |
+| 6 | Só dados necessários | ✅ A busca não coleta nada. O contato pede só nome, e-mail e mensagem |
 | 7 | Scripts de tracking | ✅ Nenhum por padrão. O Analytics só carrega depois do "Aceitar" |
 | 8 | Acessibilidade | ✅ Link "Pular para o conteúdo", `label` em todos os campos, avisos lidos por leitores de tela |
 | 9 | Alt nas imagens | ✅ Sem imagens de conteúdo. A logo ao lado do nome usa `alt=""` porque o nome já está escrito |
@@ -180,6 +185,6 @@ Outros cuidados:
 | 12 | Sem avaliações falsas | ✅ O site não tem depoimentos |
 | 13 | Sem promessas sem comprovação | ✅ Sem "o mais barato" ou "o melhor". Só compromissos que o site cumpre |
 | 14 | Copyright das imagens | ✅ Só ícones próprios em SVG, sem fontes ou imagens de terceiros |
-| 15 | Dados da empresa | ⚠ O lugar já está pronto no rodapé e nas políticas: **preencha no `site.json`** |
-| 16 | Conformidade LGPD | ✅ Base legal, compartilhamento, prazos e direitos do titular explicados. ⚠ Falta nomear o encarregado (DPO) |
+| 15 | Dados do responsável | ⚠ **Preencha `empresa.responsavel` (seu nome) e `empresa.email` no `site.json`**. Sem CNPJ, não precisa mostrar CPF nem endereço |
+| 16 | Conformidade LGPD | ✅ Base legal, prazos e direitos do titular explicados. Também fica claro que os dados da compra ficam com o parceiro |
 | 17 | Riscos jurídicos | ⚠ Links de afiliado identificados, uso de marcas de terceiros proibido nos termos. **Falta a revisão de um advogado** |

@@ -36,7 +36,12 @@ function aplicarIdentidade(identidade) {
   });
 }
 
-function montarCabecalho(identidade) {
+/** O site vende algo diretamente (modo revenda)? Se não, some o carrinho. */
+export function temRevenda(config) {
+  return config.extensoes.some((extensao) => extensao.modo === "revenda");
+}
+
+function montarCabecalho(identidade, comCarrinho) {
   const paginaAtual = document.body.dataset.pagina;
   const cabecalho = document.querySelector("[data-cabecalho]");
   if (!cabecalho) return;
@@ -62,11 +67,11 @@ function montarCabecalho(identidade) {
       <nav aria-label="Menu principal">
         <ul class="menu" id="menu-principal">
           ${itens}
-          <li>
+          ${comCarrinho ? `<li>
             <a href="carrinho.html" data-link-carrinho${carrinhoAtual}>
               Carrinho <span class="contador-carrinho" data-contador-carrinho aria-hidden="true" hidden>0</span>
             </a>
-          </li>
+          </li>` : ""}
         </ul>
       </nav>
     </div>
@@ -111,6 +116,7 @@ function montarRodape(config) {
   if (!rodape) return;
 
   const temAfiliado = config.extensoes.some((e) => e.modo !== "revenda");
+  const revenda = temRevenda(config);
   const email = empresa.email
     ? `<a href="mailto:${escaparHtml(empresa.email)}">${escaparHtml(empresa.email)}</a>`
     : dado("", "E-mail");
@@ -123,9 +129,11 @@ function montarRodape(config) {
           <img class="rodape__logo" src="${escaparHtml(identidade.logo)}" alt="${escaparHtml(identidade.logoAlt || "")}">
           <h2>${escaparHtml(identidade.nome)}</h2>
           ${identidade.grupo ? `<p class="rodape__grupo">Um projeto do grupo ${escaparHtml(identidade.grupo)}.</p>` : ""}
+          ${revenda ? `
           <p>${dado(empresa.razaoSocial, "Razão social")}</p>
           <p>CNPJ: ${dado(empresa.cnpj, "CNPJ")}</p>
-          <p>${dado(empresa.endereco, "Endereço")}</p>
+          <p>${dado(empresa.endereco, "Endereço")}</p>` : `
+          <p>Responsável: ${dado(empresa.responsavel, "Nome")}</p>`}
           <p>${email}</p>
         </div>
 
@@ -144,7 +152,7 @@ function montarRodape(config) {
           <h2>Ajuda</h2>
           <ul>
             <li><a href="index.html#duvidas">Dúvidas frequentes</a></li>
-            <li><a href="pedido.html">Acompanhar pedido</a></li>
+            ${revenda ? '<li><a href="pedido.html">Acompanhar pedido</a></li>' : ""}
             <li><a href="contato.html">Fale com a gente</a></li>
             <li><a href="privacidade.html#seus-direitos">Seus direitos (LGPD)</a></li>
           </ul>
@@ -171,7 +179,7 @@ function montarRodape(config) {
 export async function iniciarPagina() {
   const config = await carregarConfig();
   aplicarIdentidade(config.identidade);
-  montarCabecalho(config.identidade);
+  montarCabecalho(config.identidade, temRevenda(config));
   montarRodape(config);
   atualizarContador();
   iniciarCookies(config);

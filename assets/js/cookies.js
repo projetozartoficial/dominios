@@ -67,7 +67,7 @@ export function mostrarAvisoCookies(config) {
   aviso.innerHTML = `
     <h2 id="titulo-cookies">Sua privacidade</h2>
     <p>
-      Usamos armazenamento essencial para o site funcionar (por exemplo, guardar seu carrinho).
+      Usamos armazenamento essencial para o site funcionar (por exemplo, lembrar esta escolha).
       Com a sua permissão, também usamos cookies de análise para entender como o site é usado.
       Saiba mais na <a href="cookies.html">Política de Cookies</a>.
     </p>
