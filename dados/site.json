@@ -27,8 +27,8 @@
       "tld": "com",
       "descricao": "A extensão mais conhecida do mundo.",
       "modo": "afiliado",
-      "parceiro": "Parceiro",
-      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "parceiro": "Namecheap",
+      "link": "https://SEU-LINK-DE-AFILIADO-NAMECHEAP/?dominio={dominio}",
       "rdap": "https://rdap.verisign.com/com/v1/domain/"
     },
     {
@@ -43,32 +43,32 @@
       "tld": "net",
       "descricao": "Boa alternativa quando o .com já tem dono.",
       "modo": "afiliado",
-      "parceiro": "Parceiro",
-      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "parceiro": "Namecheap",
+      "link": "https://SEU-LINK-DE-AFILIADO-NAMECHEAP/?dominio={dominio}",
       "rdap": "https://rdap.verisign.com/net/v1/domain/"
     },
     {
       "tld": "org",
       "descricao": "Comum em projetos, comunidades e ONGs.",
       "modo": "afiliado",
-      "parceiro": "Parceiro",
-      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "parceiro": "Dynadot",
+      "link": "https://SEU-LINK-DE-AFILIADO-DYNADOT/?dominio={dominio}",
       "rdap": "https://rdap.publicinterestregistry.org/rdap/domain/"
     },
     {
       "tld": "dev",
       "descricao": "Feita para desenvolvedores. Exige HTTPS.",
       "modo": "afiliado",
-      "parceiro": "Parceiro",
-      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "parceiro": "Dynadot",
+      "link": "https://SEU-LINK-DE-AFILIADO-DYNADOT/?dominio={dominio}",
       "rdap": "https://pubapi.registry.google/rdap/domain/"
     },
     {
       "tld": "io",
       "descricao": "Popular entre startups e produtos de tecnologia.",
       "modo": "afiliado",
-      "parceiro": "Parceiro",
-      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "parceiro": "Dynadot",
+      "link": "https://SEU-LINK-DE-AFILIADO-DYNADOT/?dominio={dominio}",
       "rdap": ""
     }
   ]
