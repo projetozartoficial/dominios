@@ -1118,3 +1118,53 @@ textarea::placeholder {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* 14. Página "Sobre o Grupo Zart" ------------------------ */
+.hero--curto {
+  padding-block: clamp(3rem, 8vw, 5.5rem) clamp(2.5rem, 6vw, 4rem);
+}
+
+.sobre__logo {
+  width: min(240px, 60vw);
+  height: auto;
+  margin: 0 auto 1.5rem;
+}
+
+.texto-sobre {
+  max-width: 760px;
+}
+
+.texto-sobre p {
+  color: var(--texto-suave);
+  font-size: 1.05rem;
+}
+
+.texto-sobre strong {
+  color: var(--texto);
+}
+
+.passos--sem-numero .passo::before {
+  content: "♛";
+  font-size: 1.2rem;
+}
+
+.lista-projetos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-projetos .cartao__tld {
+  font-size: 1.5rem;
+  padding-right: 6.5rem;
+}
+
+.lista-projetos .botao {
+  margin-top: 0.5rem;
+}
+
+.cartao--em-breve {
+  border-style: dashed;
+  background: transparent;
+}

@@ -20,9 +20,9 @@ services:
       - key: PASTA_DADOS
         value: /var/data
       - key: ORIGEM_PERMITIDA
-        value: https://wasmorf.github.io
+        value: https://projetozartoficial.github.io
       - key: URL_SITE
-        value: https://wasmorf.github.io/zartdominios
+        value: https://projetozartoficial.github.io/dominios
       - key: URL_API
         sync: false
       - key: DYNADOT_CHAVE_API

@@ -24,6 +24,7 @@ site-dominios/
 ├── carrinho.html         Carrinho e dados do titular
 ├── pedido.html           Acompanhar pedido (o Mercado Pago traz o cliente de volta para cá)
 ├── contato.html          Formulário de contato
+├── sobre.html            Sobre o Grupo Zart
 ├── termos.html           Termos de Uso
 ├── privacidade.html      Política de Privacidade (LGPD)
 ├── cookies.html          Política de Cookies
@@ -54,7 +55,9 @@ site-dominios/
 │   ├── configuracao.py       Lê site.json e as variáveis de ambiente
 │   └── .env.exemplo          Modelo das chaves secretas
 ├── render.yaml           Publicação do back-end no Render
-└── docs/requisitos.md    Requisitos, regras de negócio e diagramas UML
+└── docs/
+    ├── requisitos.md     Requisitos, regras de negócio e diagramas UML
+    └── grupo-zart.md     Guia da marca Zart (textos, cores e padrão para outros sites)
 ```
 
 ---

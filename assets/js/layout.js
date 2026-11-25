@@ -14,6 +14,7 @@ const LINKS_MENU = [
   { texto: "Extensões", href: "index.html#extensoes" },
   { texto: "Como funciona", href: "index.html#como-funciona" },
   { texto: "Dúvidas", href: "index.html#duvidas" },
+  { texto: "Sobre", href: "sobre.html", pagina: "sobre" },
   { texto: "Contato", href: "contato.html", pagina: "contato" },
 ];
 
@@ -128,7 +129,7 @@ function montarRodape(config) {
         <div class="rodape__empresa">
           <img class="rodape__logo" src="${escaparHtml(identidade.logo)}" alt="${escaparHtml(identidade.logoAlt || "")}">
           <h2>${escaparHtml(identidade.nome)}</h2>
-          ${identidade.grupo ? `<p class="rodape__grupo">Um projeto do grupo ${escaparHtml(identidade.grupo)}.</p>` : ""}
+          ${identidade.grupo ? `<p class="rodape__grupo">Um projeto do <a href="sobre.html">Grupo ${escaparHtml(identidade.grupo)}</a>.</p>` : ""}
           ${revenda ? `
           <p>${dado(empresa.razaoSocial, "Razão social")}</p>
           <p>CNPJ: ${dado(empresa.cnpj, "CNPJ")}</p>
@@ -153,6 +154,7 @@ function montarRodape(config) {
           <ul>
             <li><a href="index.html#duvidas">Dúvidas frequentes</a></li>
             ${revenda ? '<li><a href="pedido.html">Acompanhar pedido</a></li>' : ""}
+            <li><a href="sobre.html">Sobre o Grupo Zart</a></li>
             <li><a href="contato.html">Fale com a gente</a></li>
             <li><a href="privacidade.html#seus-direitos">Seus direitos (LGPD)</a></li>
           </ul>
