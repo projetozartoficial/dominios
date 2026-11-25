@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pesquise e registre domínios .com, .com.br, .net e outras extensões.">
+  <meta name="theme-color" content="#191970">
+  <title>Domínios</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="module" src="assets/js/pagina-inicio.js"></script>
+</head>
+<body data-pagina="inicio" data-titulo="Registre seu domínio">
+  <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+
+  <header data-cabecalho></header>
+
+  <main id="conteudo">
+
+    <!-- Busca de domínios -->
+    <section class="hero" aria-labelledby="titulo-hero">
+      <div class="container">
+        <span class="etiqueta">Busca de domínios</span>
+        <h1 id="titulo-hero">Seu nome na internet <span>começa aqui.</span></h1>
+        <p class="hero__texto">
+          Digite o nome que você quer e veja na hora em quais extensões ele está livre.
+        </p>
+
+        <form class="busca" role="search" data-form-busca>
+          <label for="campo-dominio" class="somente-leitor">Nome do domínio</label>
+          <input id="campo-dominio" name="dominio" type="search"
+                 placeholder="ex.: minhaempresa" autocomplete="off"
+                 autocapitalize="off" spellcheck="false" maxlength="80" required>
+          <button type="submit" class="botao">Pesquisar</button>
+        </form>
+
+        <p class="busca__dica">Use letras, números e hífen. Acentos são removidos automaticamente.</p>
+        <p class="busca__erro" role="alert" data-erro-busca hidden></p>
+
+        <noscript>
+          <p class="mensagem">A busca precisa do JavaScript ativado no navegador.</p>
+        </noscript>
+
+        <div class="resultados" data-resultados hidden>
+          <h2 class="resultados__titulo" data-titulo-resultados tabindex="-1"></h2>
+          <ul class="lista-resultados" data-lista-resultados aria-live="polite"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Extensões e preços -->
+    <section class="secao secao--escura" id="extensoes" aria-labelledby="titulo-extensoes">
+      <div class="container">
+        <div class="secao__topo">
+          <span class="etiqueta">Extensões</span>
+          <h2 id="titulo-extensoes">Escolha o final do seu endereço</h2>
+          <p>
+            Algumas extensões você compra aqui mesmo. Outras são registradas por parceiros,
+            e o botão leva você direto para eles.
+          </p>
+        </div>
+
+        <div class="grade-extensoes" data-grade-extensoes></div>
+
+        <aside class="aviso-afiliado" aria-label="Transparência sobre parceiros">
+          <p>
+            <strong>Transparência:</strong> nas extensões marcadas como "Parceiro", a compra
+            acontece no site do parceiro e podemos receber uma comissão por isso. O preço para
+            você é o mesmo.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Como funciona -->
+    <section class="secao" id="como-funciona" aria-labelledby="titulo-como-funciona">
+      <div class="container">
+        <div class="secao__topo">
+          <span class="etiqueta">Como funciona</span>
+          <h2 id="titulo-como-funciona">Do nome ao endereço em três passos</h2>
+        </div>
+
+        <ol class="passos">
+          <li class="passo">
+            <h3>Pesquise</h3>
+            <p>Digite o nome e veja em quais extensões ele ainda não tem dono.</p>
+          </li>
+          <li class="passo">
+            <h3>Escolha</h3>
+            <p>Coloque no carrinho e escolha por quantos anos registrar, ou siga para o parceiro.</p>
+          </li>
+          <li class="passo">
+            <h3>Use</h3>
+            <p>Depois do pagamento confirmado, o domínio é registrado no seu nome.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Compromissos -->
+    <section class="secao secao--escura" aria-labelledby="titulo-compromissos">
+      <div class="container">
+        <div class="secao__topo">
+          <span class="etiqueta">Nossos compromissos</span>
+          <h2 id="titulo-compromissos">O que você pode esperar</h2>
+        </div>
+
+        <ol class="passos">
+          <li class="passo">
+            <h3>Renovação à vista</h3>
+            <p>O preço de renovação aparece junto do preço de registro, antes de você comprar.</p>
+          </li>
+          <li class="passo">
+            <h3>Parceiros identificados</h3>
+            <p>Sempre avisamos quando um botão leva para outro site.</p>
+          </li>
+          <li class="passo">
+            <h3>Privacidade</h3>
+            <p>Nada de rastreamento sem a sua permissão. Pedimos só os dados necessários.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Dúvidas -->
+    <section class="secao" id="duvidas" aria-labelledby="titulo-duvidas">
+      <div class="container">
+        <div class="secao__topo">
+          <span class="etiqueta">Dúvidas</span>
+          <h2 id="titulo-duvidas">Perguntas frequentes</h2>
+        </div>
+
+        <div class="duvidas">
+          <details class="duvida">
+            <summary>O que é um domínio?</summary>
+            <p>É o endereço do seu site, como <code>minhaempresa.com.br</code>. Com ele você também pode criar e-mails personalizados.</p>
+          </details>
+
+          <details class="duvida">
+            <summary>O domínio é meu para sempre?</summary>
+            <p>Não. O domínio é registrado por um período (de 1 a 5 anos aqui) e precisa ser renovado antes de vencer. Se não for renovado, ele pode ser liberado para outra pessoa.</p>
+          </details>
+
+          <details class="duvida">
+            <summary>Preciso de CPF ou CNPJ?</summary>
+            <p>Para domínios terminados em <code>.br</code>, sim: o Registro.br exige CPF ou CNPJ válido. Para as compras feitas aqui, pedimos o documento porque ele é obrigatório no registro do domínio.</p>
+          </details>
+
+          <details class="duvida">
+            <summary>Por que alguns botões levam para outro site?</summary>
+            <p>Algumas extensões são vendidas por parceiros. Nesses casos, a compra, o pagamento e o suporte acontecem no site do parceiro, e podemos receber uma comissão.</p>
+          </details>
+
+          <details class="duvida">
+            <summary>A busca é 100% certeira?</summary>
+            <p>A busca consulta os registros oficiais, mas um domínio pode ser registrado por outra pessoa a qualquer momento. A disponibilidade é confirmada de novo antes do pagamento.</p>
+          </details>
+
+          <details class="duvida">
+            <summary>Posso cancelar e pedir reembolso?</summary>
+            <p>Veja as regras completas na nossa <a href="reembolso.html">Política de Cancelamento e Reembolso</a>.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer data-rodape></footer>
+</body>
+</html>
