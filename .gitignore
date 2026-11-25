@@ -1,0 +1,14 @@
+# Chaves e senhas
+.env
+
+# Pedidos e mensagens de clientes (dados pessoais: nunca publicar)
+backend/dados/
+
+# Python
+__pycache__/
+venv/
+.venv/
+
+# Sistema
+.DS_Store
+Thumbs.db

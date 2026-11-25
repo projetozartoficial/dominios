@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#191970">
+  <meta name="robots" content="noindex">
+  <title>Carrinho</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="module" src="assets/js/pagina-carrinho.js"></script>
+</head>
+<body data-pagina="carrinho" data-titulo="Carrinho">
+  <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+
+  <header data-cabecalho></header>
+
+  <main id="conteudo" class="container">
+    <div class="pagina-topo">
+      <h1>Seu carrinho</h1>
+      <p>Revise os domínios, escolha por quantos anos registrar e finalize o pedido.</p>
+    </div>
+
+    <div class="carrinho">
+      <section class="painel" aria-labelledby="titulo-itens">
+        <h2 id="titulo-itens" class="somente-leitor">Domínios no carrinho</h2>
+        <ul class="itens-carrinho" data-itens></ul>
+        <div class="total" data-total>
+          <span>Total</span>
+          <span data-valor-total>R$ 0,00</span>
+        </div>
+      </section>
+
+      <section class="painel" aria-labelledby="titulo-dados" data-painel-dados>
+        <h2 id="titulo-dados">Dados do titular</h2>
+        <p class="campo"><small>O titular é a pessoa ou empresa que vai ser dona do domínio. Pedimos só o necessário para o registro.</small></p>
+
+        <form data-form-pedido novalidate>
+          <div class="campo">
+            <label for="nome">Nome completo ou razão social</label>
+            <input id="nome" name="nome" type="text" autocomplete="name" required maxlength="120">
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" required maxlength="120"
+                   aria-describedby="ajuda-email">
+            <small id="ajuda-email">Enviamos aqui a confirmação e os avisos de renovação.</small>
+          </div>
+
+          <div class="campo">
+            <label for="documento">CPF ou CNPJ</label>
+            <input id="documento" name="documento" type="text" inputmode="numeric" required maxlength="18"
+                   aria-describedby="ajuda-documento">
+            <small id="ajuda-documento">Obrigatório para registrar o domínio no nome do titular.</small>
+          </div>
+
+          <div class="campo-check">
+            <input id="aceite" name="aceite" type="checkbox" required>
+            <label for="aceite">
+              Li e aceito os <a href="termos.html">Termos de Uso</a> e a
+              <a href="reembolso.html">Política de Reembolso</a>,
+              e estou ciente de como meus dados são tratados na
+              <a href="privacidade.html">Política de Privacidade</a>.
+            </label>
+          </div>
+
+          <button type="submit" class="botao" data-botao-finalizar>Finalizar pedido</button>
+          <div data-mensagem-pedido role="alert"></div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer data-rodape></footer>
+</body>
+</html>

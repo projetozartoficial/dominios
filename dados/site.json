@@ -1,0 +1,78 @@
+{
+  "identidade": {
+    "nome": "Zart Domínios",
+    "grupo": "Zart",
+    "submarca": "Domínios",
+    "slogan": "Encontre e registre o domínio do seu projeto.",
+    "logo": "assets/img/zart-logo.png",
+    "logoAlt": "Zart",
+    "favicon": "assets/img/favicon.png"
+  },
+
+  "empresa": {
+    "razaoSocial": "",
+    "cnpj": "",
+    "endereco": "",
+    "email": "",
+    "encarregadoLGPD": ""
+  },
+
+  "api": {
+    "url": ""
+  },
+
+  "analytics": {
+    "googleAnalyticsId": ""
+  },
+
+  "extensoes": [
+    {
+      "tld": "com",
+      "descricao": "A extensão mais conhecida do mundo.",
+      "modo": "revenda",
+      "preco": 69.90,
+      "renovacao": 69.90,
+      "rdap": "https://rdap.verisign.com/com/v1/domain/"
+    },
+    {
+      "tld": "com.br",
+      "descricao": "Para quem tem CPF ou CNPJ e atua no Brasil.",
+      "modo": "externo",
+      "parceiro": "Registro.br",
+      "link": "https://registro.br/busca-dominio/?fqdn={dominio}",
+      "rdap": "https://rdap.registro.br/domain/"
+    },
+    {
+      "tld": "net",
+      "descricao": "Boa alternativa quando o .com já tem dono.",
+      "modo": "revenda",
+      "preco": 79.90,
+      "renovacao": 79.90,
+      "rdap": "https://rdap.verisign.com/net/v1/domain/"
+    },
+    {
+      "tld": "org",
+      "descricao": "Comum em projetos, comunidades e ONGs.",
+      "modo": "afiliado",
+      "parceiro": "Parceiro",
+      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "rdap": "https://rdap.publicinterestregistry.org/rdap/domain/"
+    },
+    {
+      "tld": "dev",
+      "descricao": "Feita para desenvolvedores. Exige HTTPS.",
+      "modo": "afiliado",
+      "parceiro": "Parceiro",
+      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "rdap": "https://pubapi.registry.google/rdap/domain/"
+    },
+    {
+      "tld": "io",
+      "descricao": "Popular entre startups e produtos de tecnologia.",
+      "modo": "afiliado",
+      "parceiro": "Parceiro",
+      "link": "https://SEU-LINK-DE-AFILIADO/?dominio={dominio}",
+      "rdap": ""
+    }
+  ]
+}
