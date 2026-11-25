@@ -141,6 +141,11 @@ code {
   border-radius: 6px;
 }
 
+/* Títulos que recebem foco só por código (para leitores de tela) não mostram contorno */
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
 /* Esconde da tela, mas mantém para leitores de tela */
 .somente-leitor {
   position: absolute;

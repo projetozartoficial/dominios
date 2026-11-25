@@ -31,7 +31,7 @@ function textoPreco(extensao) {
   if (extensao.modo === "revenda") {
     return `${formatarPreco(extensao.preco)}<small>no 1º ano · renova por ${formatarPreco(extensao.renovacao)}/ano</small>`;
   }
-  return `Preço no ${escaparHtml(extensao.parceiro)}<small>a compra é feita no site dele</small>`;
+  return `Preço na ${escaparHtml(extensao.parceiro)}<small>a compra é feita no site do parceiro</small>`;
 }
 
 function montarVitrine() {
@@ -87,7 +87,7 @@ function montarAcao(extensao, dominio, status) {
   // Afiliado ou externo: leva para o parceiro
   const link = linkDoParceiro(extensao, dominio);
   const tipo = extensao.modo === "afiliado" ? "Link de parceiro (afiliado)." : "Site oficial do registro.";
-  const explicacao = `<span>Você será levado ao ${escaparHtml(extensao.parceiro)}. ${tipo}</span>`;
+  const explicacao = `<span>Você será levado à ${escaparHtml(extensao.parceiro)}. ${tipo}</span>`;
 
   if (!link) {
     return `${explicacao}<button type="button" class="botao botao--secundario botao--pequeno" disabled>Link em breve</button>`;
@@ -96,7 +96,7 @@ function montarAcao(extensao, dominio, status) {
   const rel = extensao.modo === "afiliado" ? "sponsored noopener" : "noopener";
   return `${explicacao}
     <a class="botao botao--pequeno" href="${escaparHtml(link)}" target="_blank" rel="${rel}">
-      Registrar no ${escaparHtml(extensao.parceiro)}<span class="somente-leitor"> (abre em nova aba)</span>
+      Registrar na ${escaparHtml(extensao.parceiro)}<span class="somente-leitor"> (abre em nova aba)</span>
     </a>`;
 }
 
@@ -104,7 +104,7 @@ function precoDoResultado(extensao) {
   if (extensao.modo === "revenda") {
     return `${formatarPreco(extensao.preco)}<small>renova por ${formatarPreco(extensao.renovacao)}/ano</small>`;
   }
-  return `<small>Preço no ${escaparHtml(extensao.parceiro)}</small>`;
+  return `<small>Preço na ${escaparHtml(extensao.parceiro)}</small>`;
 }
 
 /** Atualiza um item da lista quando a verificação termina. */
