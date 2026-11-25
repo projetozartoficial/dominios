@@ -1,12 +1,15 @@
 """
-Servidor do back-end (parte de REVENDA).
+Servidor do back-end da Zart Domínios (parte de REVENDA).
 
 Feito só com a biblioteca padrão do Python: não precisa instalar nada.
 
 Rotas:
+    GET  /                                          -> teste rápido ("está no ar?")
     GET  /api/disponibilidade?dominio=meusite.com  -> {"dominio", "status"}
-    POST /api/pedidos                               -> cria um pedido
+    GET  /api/pedidos/<codigo>                      -> situação de um pedido
+    POST /api/pedidos                               -> cria pedido e link de pagamento
     POST /api/contato                               -> recebe mensagem de contato
+    POST /api/pagamento/notificacao                 -> aviso do Mercado Pago (webhook)
 
 Para rodar:
     cd backend
@@ -14,13 +17,17 @@ Para rodar:
 """
 
 import json
+import threading
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+import banco
 import disponibilidade
+import pagamento
 from configuracao import ORIGEM_PERMITIDA, PORTA, extensoes_por_tld
-from pedidos import ErroPedido, criar_pedido, registrar_contato
+from http_util import ErroApi
+from pedidos import ErroPedido, consultar_pedido, criar_pedido, processar_notificacao, registrar_contato
 from validacao import separar_dominio
 
 TAMANHO_MAXIMO = 20_000  # bytes aceitos no corpo de uma requisição
@@ -47,16 +54,31 @@ class Manipulador(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(corpo)
 
-    def _ler_json(self):
+    def _ler_corpo(self):
         tamanho = int(self.headers.get("Content-Length") or 0)
-        if tamanho <= 0 or tamanho > TAMANHO_MAXIMO:
-            raise ErroPedido("Requisição inválida.")
+        if tamanho > TAMANHO_MAXIMO:
+            raise ErroPedido("Requisição grande demais.")
+        return self.rfile.read(tamanho) if tamanho > 0 else b""
+
+    def _ler_json(self):
         try:
-            return json.loads(self.rfile.read(tamanho).decode("utf-8"))
+            return json.loads(self._ler_corpo().decode("utf-8") or "{}")
         except (json.JSONDecodeError, UnicodeDecodeError):
             raise ErroPedido("Requisição inválida.")
 
-    # ---------- rotas ----------
+    def _executar(self, funcao):
+        """Roda uma rota tratando os erros de um jeito só."""
+        try:
+            codigo, resposta = funcao()
+            self._responder(codigo, resposta)
+        except ErroPedido as erro:
+            self._responder(400, {"erro": str(erro)})
+        except Exception:  # erro inesperado: não mostra detalhes internos ao visitante
+            self.log_error("Erro inesperado em %s", self.path)
+            traceback.print_exc()
+            self._responder(500, {"erro": "Erro interno. Tente novamente mais tarde."})
+
+    # ---------- rotas GET ----------
 
     def do_OPTIONS(self):
         """Pergunta prévia que o navegador faz antes de um POST (CORS)."""
@@ -66,49 +88,80 @@ class Manipulador(BaseHTTPRequestHandler):
 
     def do_GET(self):
         endereco = urlparse(self.path)
+        caminho = endereco.path.rstrip("/")
 
-        if endereco.path != "/api/disponibilidade":
+        if caminho == "":
+            self._responder(200, {"ok": True, "servico": "Zart Domínios"})
+        elif caminho == "/api/disponibilidade":
+            self._executar(lambda: (200, self._disponibilidade(endereco.query)))
+        elif caminho.startswith("/api/pedidos/"):
+            codigo = caminho.rsplit("/", 1)[-1]
+            self._executar(lambda: (200, consultar_pedido(codigo)))
+        else:
             self._responder(404, {"erro": "Rota não encontrada."})
-            return
 
-        dominio = parse_qs(endereco.query).get("dominio", [""])[0]
+    def _disponibilidade(self, consulta):
+        dominio = parse_qs(consulta).get("dominio", [""])[0]
         extensoes = extensoes_por_tld()
         separado = separar_dominio(dominio, extensoes.keys())
-
         if not separado:
-            self._responder(400, {"erro": "Domínio inválido."})
-            return
-
+            raise ErroPedido("Domínio inválido.")
         nome, tld = separado
         dominio = f"{nome}.{tld}"
-        status = disponibilidade.verificar(dominio, extensoes[tld])
-        self._responder(200, {"dominio": dominio, "status": status})
+        return {"dominio": dominio, "status": disponibilidade.verificar(dominio, extensoes[tld])}
+
+    # ---------- rotas POST ----------
 
     def do_POST(self):
-        rotas = {
-            "/api/pedidos": lambda dados: (201, criar_pedido(dados)),
-            "/api/contato": lambda dados: (201, registrar_contato(dados) or {"ok": True}),
-        }
+        caminho = urlparse(self.path).path.rstrip("/")
 
-        acao = rotas.get(urlparse(self.path).path)
-        if not acao:
+        if caminho == "/api/pedidos":
+            self._executar(lambda: (201, criar_pedido(self._ler_json())))
+        elif caminho == "/api/contato":
+            self._executar(lambda: (201, registrar_contato(self._ler_json()) or {"ok": True}))
+        elif caminho == "/api/pagamento/notificacao":
+            self._notificacao_mercado_pago()
+        else:
             self._responder(404, {"erro": "Rota não encontrada."})
+
+    def _notificacao_mercado_pago(self):
+        """
+        Recebe o aviso do Mercado Pago. Responde 200 rápido (o Mercado Pago
+        espera pouco tempo) e processa o pagamento em segundo plano.
+        """
+        consulta = parse_qs(urlparse(self.path).query)
+        try:
+            corpo = json.loads(self._ler_corpo().decode("utf-8") or "{}")
+        except (json.JSONDecodeError, UnicodeDecodeError, ErroPedido):
+            corpo = {}
+
+        tipo = consulta.get("type", [corpo.get("type", "")])[0]
+        id_dado = consulta.get("data.id", [str((corpo.get("data") or {}).get("id", ""))])[0]
+
+        if not pagamento.assinatura_valida(
+            self.headers.get("x-signature"), self.headers.get("x-request-id"), id_dado
+        ):
+            self._responder(401, {"erro": "Assinatura inválida."})
             return
 
+        self._responder(200, {"ok": True})
+
+        if tipo == "payment" and id_dado:
+            threading.Thread(target=self._processar_em_segundo_plano, args=(id_dado,), daemon=True).start()
+
+    @staticmethod
+    def _processar_em_segundo_plano(pagamento_id):
         try:
-            codigo, resposta = acao(self._ler_json())
-            self._responder(codigo, resposta)
-        except ErroPedido as erro:
-            self._responder(400, {"erro": str(erro)})
-        except Exception:  # erro inesperado: não mostra detalhes internos ao visitante
-            self.log_error("Erro inesperado em %s", self.path)
+            processar_notificacao(pagamento_id)
+        except (ErroApi, Exception):
+            print(f"[notificação {pagamento_id}] falhou:")
             traceback.print_exc()
-            self._responder(500, {"erro": "Erro interno. Tente novamente mais tarde."})
 
 
 def main():
+    banco.criar_tabelas()
     servidor = ThreadingHTTPServer(("0.0.0.0", PORTA), Manipulador)
-    print(f"Back-end rodando em http://localhost:{PORTA}")
+    print(f"Back-end da Zart Domínios rodando na porta {PORTA}")
     print(f"Aceitando requisições do site: {ORIGEM_PERMITIDA}")
     try:
         servidor.serve_forever()

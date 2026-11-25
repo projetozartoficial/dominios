@@ -1,0 +1,47 @@
+# Configuração para publicar o back-end no Render (render.com).
+# No Render: New > Blueprint > escolha este repositório.
+# Depois preencha as chaves em "Environment" (as marcadas com sync: false).
+
+services:
+  - type: web
+    name: zart-dominios-api
+    runtime: python
+    rootDir: backend
+    buildCommand: echo "Sem dependências para instalar"
+    startCommand: python servidor.py
+    # O plano pago é necessário por causa do disco: sem ele, os pedidos
+    # são apagados quando o servidor reinicia.
+    plan: starter
+    disk:
+      name: dados
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PASTA_DADOS
+        value: /var/data
+      - key: ORIGEM_PERMITIDA
+        value: https://wasmorf.github.io
+      - key: URL_SITE
+        value: https://wasmorf.github.io/zartdominios
+      - key: URL_API
+        sync: false
+      - key: DYNADOT_CHAVE_API
+        sync: false
+      - key: DYNADOT_MODO_TESTE
+        value: sim
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADOPAGO_SEGREDO_WEBHOOK
+        sync: false
+      - key: SMTP_SERVIDOR
+        sync: false
+      - key: SMTP_PORTA
+        value: "587"
+      - key: SMTP_USUARIO
+        sync: false
+      - key: SMTP_SENHA
+        sync: false
+      - key: EMAIL_REMETENTE
+        sync: false
+      - key: EMAIL_ADMIN
+        sync: false

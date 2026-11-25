@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#191970">
+  <meta name="robots" content="noindex">
+  <title>Meu pedido</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="module" src="assets/js/pagina-pedido.js"></script>
+</head>
+<body data-pagina="pedido" data-titulo="Meu pedido">
+  <a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+
+  <header data-cabecalho></header>
+
+  <main id="conteudo" class="container">
+    <div class="pagina-topo">
+      <h1>Meu pedido</h1>
+      <p>Acompanhe o pagamento e o registro dos seus domínios.</p>
+    </div>
+
+    <div class="carrinho">
+      <section class="painel" aria-labelledby="titulo-situacao">
+        <h2 id="titulo-situacao" data-codigo-pedido>Pedido</h2>
+        <p class="situacao-pedido" data-situacao role="status" aria-live="polite">Carregando…</p>
+        <ul class="itens-carrinho" data-itens-pedido></ul>
+        <div class="total" data-total-pedido hidden>
+          <span>Total pago</span>
+          <span data-valor-pedido></span>
+        </div>
+      </section>
+
+      <section class="painel" aria-labelledby="titulo-buscar">
+        <h2 id="titulo-buscar">Consultar outro pedido</h2>
+        <form data-form-consulta>
+          <div class="campo">
+            <label for="codigo">Código do pedido</label>
+            <input id="codigo" name="codigo" type="text" required maxlength="20" placeholder="Z-1A2B3C4D5E"
+                   autocapitalize="characters" spellcheck="false">
+          </div>
+          <button type="submit" class="botao">Consultar</button>
+        </form>
+        <p class="campo"><small>O código aparece no e-mail de confirmação.</small></p>
+      </section>
+    </div>
+  </main>
+
+  <footer data-rodape></footer>
+</body>
+</html>

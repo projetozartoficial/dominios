@@ -4,7 +4,7 @@ Configurações do back-end.
 Os preços e as extensões vêm do MESMO arquivo do site (dados/site.json),
 então você só precisa mudar os preços em um lugar.
 
-As senhas e chaves (API do provedor, pagamento) NUNCA ficam no código:
+As senhas e chaves (Dynadot, Mercado Pago, e-mail) NUNCA ficam no código:
 elas vêm de variáveis de ambiente. Veja o arquivo .env.exemplo.
 """
 
@@ -15,7 +15,6 @@ from pathlib import Path
 PASTA_BACKEND = Path(__file__).resolve().parent
 PASTA_PROJETO = PASTA_BACKEND.parent
 ARQUIVO_SITE = PASTA_PROJETO / "dados" / "site.json"
-PASTA_DADOS = PASTA_BACKEND / "dados"
 
 
 def carregar_env(caminho=PASTA_BACKEND / ".env"):
@@ -55,8 +54,36 @@ def extensoes_por_tld():
     return {extensao["tld"]: extensao for extensao in carregar_site()["extensoes"]}
 
 
+def env(chave, padrao=""):
+    """Lê uma variável de ambiente, já sem espaços."""
+    return os.environ.get(chave, padrao).strip()
+
+
 carregar_env()
 
-PORTA = int(os.environ.get("PORTA", "8080"))
-ORIGEM_PERMITIDA = os.environ.get("ORIGEM_PERMITIDA", "http://localhost:8000")
+PASTA_DADOS = Path(env("PASTA_DADOS") or PASTA_BACKEND / "dados")
+
+# Servidor (o Render e outros serviços informam a porta pela variável PORT)
+PORTA = int(env("PORT") or env("PORTA", "8080"))
+ORIGEM_PERMITIDA = env("ORIGEM_PERMITIDA", "http://localhost:8000")
 ANOS_MAXIMO = 5
+
+# Endereços públicos (usados nos links de volta e no aviso do Mercado Pago)
+URL_SITE = env("URL_SITE", "http://localhost:8000").rstrip("/")
+URL_API = env("URL_API", "http://localhost:8080").rstrip("/")
+
+# Dynadot
+DYNADOT_CHAVE = env("DYNADOT_CHAVE_API")
+DYNADOT_TESTE = env("DYNADOT_MODO_TESTE", "sim").lower() in ("sim", "true", "1")
+
+# Mercado Pago
+MP_TOKEN = env("MERCADOPAGO_ACCESS_TOKEN")
+MP_SEGREDO_WEBHOOK = env("MERCADOPAGO_SEGREDO_WEBHOOK")
+
+# E-mail (SMTP)
+SMTP_SERVIDOR = env("SMTP_SERVIDOR")
+SMTP_PORTA = int(env("SMTP_PORTA", "587"))
+SMTP_USUARIO = env("SMTP_USUARIO")
+SMTP_SENHA = env("SMTP_SENHA")
+EMAIL_REMETENTE = env("EMAIL_REMETENTE") or SMTP_USUARIO
+EMAIL_ADMIN = env("EMAIL_ADMIN")

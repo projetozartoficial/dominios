@@ -104,6 +104,22 @@ function validarFormulario(dados) {
   if (digitos.length !== 11 && digitos.length !== 14) {
     return { campo: "documento", erro: "O CPF tem 11 dígitos e o CNPJ tem 14." };
   }
+  const telefone = dados.telefone.replace(/\D/g, "");
+  if (telefone.length < 10 || telefone.length > 11) {
+    return { campo: "telefone", erro: "Informe o telefone com DDD." };
+  }
+  if (dados.cep.replace(/\D/g, "").length !== 8) {
+    return { campo: "cep", erro: "O CEP precisa ter 8 dígitos." };
+  }
+  if (dados.endereco.length < 5) {
+    return { campo: "endereco", erro: "Informe a rua e o número." };
+  }
+  if (dados.cidade.length < 2) {
+    return { campo: "cidade", erro: "Informe a cidade." };
+  }
+  if (!dados.estado) {
+    return { campo: "estado", erro: "Escolha o estado." };
+  }
   if (!dados.aceite) {
     return { campo: "aceite", erro: "Para continuar, aceite os termos e as políticas." };
   }
@@ -114,10 +130,16 @@ async function enviarPedido(evento) {
   evento.preventDefault();
 
   const formulario = new FormData(elementos.form);
+  const campo = (nome) => String(formulario.get(nome) || "").trim();
   const dados = {
-    nome: String(formulario.get("nome") || "").trim(),
-    email: String(formulario.get("email") || "").trim(),
-    documento: String(formulario.get("documento") || "").trim(),
+    nome: campo("nome"),
+    email: campo("email"),
+    documento: campo("documento"),
+    telefone: campo("telefone"),
+    cep: campo("cep"),
+    endereco: campo("endereco"),
+    cidade: campo("cidade"),
+    estado: campo("estado"),
     aceite: formulario.get("aceite") === "on",
   };
 
@@ -137,7 +159,7 @@ async function enviarPedido(evento) {
   }
 
   elementos.botao.disabled = true;
-  mostrarMensagem("Enviando pedido…", "info");
+  mostrarMensagem("Gerando o pagamento…", "info");
 
   try {
     const resposta = await fetch(urlApi(config, "/api/pedidos"), {
@@ -148,6 +170,11 @@ async function enviarPedido(evento) {
           nome: dados.nome,
           email: dados.email,
           documento: dados.documento.replace(/\D/g, ""),
+          telefone: dados.telefone.replace(/\D/g, ""),
+          cep: dados.cep.replace(/\D/g, ""),
+          endereco: dados.endereco,
+          cidade: dados.cidade,
+          estado: dados.estado,
         },
         aceiteTermos: dados.aceite,
         itens: itensValidos().map(({ dominio, anos }) => ({ dominio, anos })),
@@ -160,15 +187,10 @@ async function enviarPedido(evento) {
       throw new Error(resultado.erro || "Não foi possível criar o pedido.");
     }
 
+    // Leva o cliente para pagar no Mercado Pago
     esvaziarCarrinho();
-
-    if (resultado.pagamentoUrl) {
-      location.href = resultado.pagamentoUrl;
-      return;
-    }
-
-    desenharCarrinho();
-    mostrarMensagem(`Pedido ${resultado.pedido} criado! Guarde este código para acompanhar a compra.`, "sucesso");
+    mostrarMensagem(`Pedido ${resultado.pedido} criado. Abrindo o pagamento…`, "sucesso");
+    location.href = resultado.pagamentoUrl;
   } catch (erro) {
     mostrarMensagem(erro.message, "erro");
   } finally {

@@ -17,6 +17,7 @@ Cores: azul meia-noite `#191970` (principal), azul-escuro e preto.
 site-dominios/
 ├── index.html            Página inicial: busca, extensões, como funciona, dúvidas
 ├── carrinho.html         Carrinho e dados do titular
+├── pedido.html           Acompanhar pedido (o Mercado Pago traz o cliente de volta para cá)
 ├── contato.html          Formulário de contato
 ├── termos.html           Termos de Uso
 ├── privacidade.html      Política de Privacidade (LGPD)
@@ -37,13 +38,17 @@ site-dominios/
 │       └── pagina-*.js       Código de cada página
 ├── backend/              Parte de REVENDA, em Python (sem instalar nada)
 │   ├── servidor.py           Rotas da API
-│   ├── pedidos.py            Cria pedidos e guarda contatos
+│   ├── pedidos.py            Cria pedidos, recebe o pagamento e manda registrar
+│   ├── provedor.py           Dynadot: cria o contato do titular e registra o domínio
+│   ├── pagamento.py          Mercado Pago: cobrança (Pix/cartão/boleto) e webhook
+│   ├── email_envio.py        E-mails para o cliente e para você (SMTP)
+│   ├── banco.py              Banco de dados SQLite (pedidos e contatos)
 │   ├── validacao.py          CPF, CNPJ, e-mail e domínio
 │   ├── disponibilidade.py    Consulta RDAP
-│   ├── provedor.py           ⚠ Integração com o provedor (a completar)
-│   ├── pagamento.py          ⚠ Integração com o pagamento (a completar)
-│   ├── configuracao.py       Lê site.json e .env
+│   ├── http_util.py          Chamadas às APIs externas
+│   ├── configuracao.py       Lê site.json e as variáveis de ambiente
 │   └── .env.exemplo          Modelo das chaves secretas
+├── render.yaml           Publicação do back-end no Render
 └── docs/requisitos.md    Requisitos, regras de negócio e diagramas UML
 ```
 
@@ -101,10 +106,21 @@ Rotas:
 | Método | Rota | O que faz |
 |---|---|---|
 | GET | `/api/disponibilidade?dominio=x.com` | Diz se o domínio está livre |
-| POST | `/api/pedidos` | Valida o titular, confere disponibilidade, calcula o total e cria o pedido |
+| POST | `/api/pedidos` | Valida o titular, confere disponibilidade, calcula o total e devolve o link do Mercado Pago |
+| GET | `/api/pedidos/<codigo>` | Situação do pedido (sem dados pessoais) |
+| POST | `/api/pagamento/notificacao` | Aviso do Mercado Pago. Confere a assinatura, consulta o pagamento e registra na Dynadot |
 | POST | `/api/contato` | Recebe a mensagem de contato |
 
-Os pedidos ficam em `backend/dados/` (fora do GitHub pelo `.gitignore`, porque têm dados pessoais).
+Como funciona uma venda:
+
+1. O cliente monta o carrinho e preenche os dados do titular.
+2. O servidor recalcula o preço e cria a cobrança no Mercado Pago.
+3. O cliente paga no Mercado Pago (Pix, cartão ou boleto) e volta para `pedido.html`.
+4. O Mercado Pago avisa o servidor. O servidor confere se o aviso é verdadeiro e se o valor está certo.
+5. O servidor cria o contato do titular na Dynadot e registra cada domínio.
+6. O cliente recebe um e-mail de confirmação, e você recebe um aviso de venda. Se algum domínio falhar, o aviso diz qual registrar manualmente.
+
+Os pedidos ficam no banco `zart.db`, dentro de `backend/dados/` ou da pasta em `PASTA_DADOS`. Essa pasta fica fora do GitHub pelo `.gitignore`, porque tem dados pessoais.
 
 ---
 
@@ -116,15 +132,35 @@ Os pedidos ficam em `backend/dados/` (fora do GitHub pelo `.gitignore`, porque t
 
 ---
 
-## O que falta para vender de verdade
+## Como colocar a revenda no ar
 
-1. Escolher o provedor de revenda e completar `backend/provedor.py` com a API dele.
-2. Escolher o serviço de pagamento e completar `backend/pagamento.py`. Falta também a rota que recebe a confirmação do pagamento (webhook) e só então chama `registrar_dominio()`.
-3. Enviar e-mails (confirmação do pedido e aviso de renovação).
-4. Preencher os dados da empresa no `site.json`. Enquanto estiverem vazios, aparecem em amarelo como "a preencher".
-5. Pedir para um advogado revisar os textos legais. Eles são modelos.
+O código já está pronto. Faltam as contas, que precisam ser criadas por você:
 
----
+1. **Dynadot**
+   - Crie a conta e coloque saldo. Ela cobra em dólar, do saldo, a cada registro.
+   - Em **Tools → API**, gere a chave de produção e a chave do sandbox.
+   - Se a Dynadot pedir uma lista de IPs liberados, coloque o IP do servidor.
+2. **Mercado Pago**
+   - Use a sua conta (de preferência no CNPJ do MEI).
+   - Em **Suas integrações**, crie uma aplicação do tipo Checkout Pro e copie o *Access Token*.
+   - Em **Webhooks**, coloque `https://SEU-BACKEND/api/pagamento/notificacao`, marque o evento **Pagamentos** e copie a **assinatura secreta**.
+3. **Render**
+   - No render.com, escolha **New → Blueprint** e selecione este repositório. Ele lê o `render.yaml`.
+   - Preencha as chaves em *Environment*.
+   - O `render.yaml` usa plano pago com disco, porque sem disco os pedidos somem quando o servidor reinicia. Confira o preço no site do Render.
+4. **Ligar o site ao back-end**
+   - No `dados/site.json`, coloque em `api.url` o endereço que o Render mostrar.
+   - Coloque esse mesmo endereço em `URL_API` no Render.
+5. **Testar antes de vender**
+   - Deixe `DYNADOT_MODO_TESTE=sim` e use as credenciais **de teste** do Mercado Pago.
+   - Faça uma compra completa.
+   - Se tudo funcionar, troque para as credenciais de produção e coloque `DYNADOT_MODO_TESTE=nao`.
+
+Outros cuidados:
+
+- **Preços:** a Dynadot cobra em dólar e você cobra em reais. Deixe margem para o câmbio e para a taxa do Mercado Pago.
+- **E-mails:** sem o SMTP configurado, a venda funciona, mas os e-mails só aparecem no log do servidor.
+- **Afiliados:** troque os `SEU-LINK-DE-AFILIADO` no `site.json` pelos seus links.
 
 ## Checklist para não ter problema (17 itens)
 

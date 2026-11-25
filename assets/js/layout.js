@@ -144,6 +144,7 @@ function montarRodape(config) {
           <h2>Ajuda</h2>
           <ul>
             <li><a href="index.html#duvidas">Dúvidas frequentes</a></li>
+            <li><a href="pedido.html">Acompanhar pedido</a></li>
             <li><a href="contato.html">Fale com a gente</a></li>
             <li><a href="privacidade.html#seus-direitos">Seus direitos (LGPD)</a></li>
           </ul>

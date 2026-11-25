@@ -1,56 +1,77 @@
 """
-Criação de pedidos e registro de mensagens de contato.
+Regras dos pedidos: criar, receber o aviso de pagamento e registrar os domínios.
 
-Regra principal: o preço SEMPRE é calculado aqui no servidor, a partir do
-site.json. O valor que aparece no navegador é só para mostrar.
+Regras principais:
+- O preço SEMPRE é calculado aqui no servidor, a partir do site.json.
+- O domínio só é registrado DEPOIS que o Mercado Pago confirma o pagamento.
 """
 
-import json
+import re
 import secrets
 import threading
-from datetime import datetime, timezone
 
+import banco
 import disponibilidade
+import email_envio
 import pagamento
-from configuracao import ANOS_MAXIMO, PASTA_DADOS, extensoes_por_tld
+import provedor
+from configuracao import ANOS_MAXIMO, extensoes_por_tld
+from http_util import ErroApi
 from validacao import documento_valido, email_valido, separar_dominio, so_digitos
 
-_trava = threading.Lock()  # evita que dois pedidos escrevam no arquivo ao mesmo tempo
+UFS = {
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA",
+    "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+}
 
 
 class ErroPedido(Exception):
     """Erro com mensagem que pode ser mostrada para o visitante."""
 
 
-def _agora():
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+# ---------------------------------------------------------------- validação
+
+def _texto(dados, campo, minimo, maximo, mensagem):
+    valor = re.sub(r"\s+", " ", str(dados.get(campo, ""))).strip()
+    if not minimo <= len(valor) <= maximo:
+        raise ErroPedido(mensagem)
+    return valor
 
 
-def _salvar(nome_arquivo, registro):
-    """Acrescenta um registro a um arquivo JSON dentro de backend/dados/."""
-    PASTA_DADOS.mkdir(exist_ok=True)
-    caminho = PASTA_DADOS / nome_arquivo
+def _validar_titular(dados):
+    """
+    Confere os dados do titular. Os registros de domínio exigem
+    nome, e-mail, telefone e endereço de quem vai ser o dono.
+    """
+    email = str(dados.get("email", "")).strip()
+    documento = so_digitos(str(dados.get("documento", "")))
+    telefone = so_digitos(str(dados.get("telefone", "")))
+    cep = so_digitos(str(dados.get("cep", "")))
+    estado = str(dados.get("estado", "")).strip().upper()
 
-    with _trava:
-        registros = json.loads(caminho.read_text(encoding="utf-8")) if caminho.exists() else []
-        registros.append(registro)
-        caminho.write_text(json.dumps(registros, ensure_ascii=False, indent=2), encoding="utf-8")
+    titular = {
+        "nome": _texto(dados, "nome", 3, 120, "Informe o nome completo ou a razão social."),
+        "email": email,
+        "documento": documento,
+        "telefone": telefone,
+        "endereco": _texto(dados, "endereco", 5, 120, "Informe o endereço com número."),
+        "cidade": _texto(dados, "cidade", 2, 80, "Informe a cidade."),
+        "estado": estado,
+        "cep": cep,
+    }
 
-
-def _validar_titular(titular):
-    nome = str(titular.get("nome", "")).strip()
-    email = str(titular.get("email", "")).strip()
-    documento = so_digitos(str(titular.get("documento", "")))
-
-    if len(nome) < 3:
-        raise ErroPedido("Informe o nome completo ou a razão social.")
     if not email_valido(email):
         raise ErroPedido("Informe um e-mail válido.")
     if not documento_valido(documento):
         raise ErroPedido("CPF ou CNPJ inválido.")
+    if len(telefone) not in (10, 11):
+        raise ErroPedido("Informe o telefone com DDD.")
+    if len(cep) != 8:
+        raise ErroPedido("O CEP precisa ter 8 dígitos.")
+    if estado not in UFS:
+        raise ErroPedido("Escolha o estado (UF).")
 
-    # Só os dados necessários são guardados
-    return {"nome": nome[:120], "email": email, "documento": documento}
+    return titular
 
 
 def _validar_itens(itens):
@@ -58,7 +79,7 @@ def _validar_itens(itens):
     Confere cada domínio do carrinho e calcula o preço de cada um.
 
     Retorna:
-        list[dict]: itens com "dominio", "anos" e "valor"
+        list[dict]: itens com "dominio", "anos", "valor" e "status"
     """
     if not isinstance(itens, list) or not itens:
         raise ErroPedido("O carrinho está vazio.")
@@ -94,61 +115,166 @@ def _validar_itens(itens):
 
         # 1º ano pelo preço de registro, os demais pelo preço de renovação
         valor = extensao["preco"] + extensao["renovacao"] * (anos - 1)
-        validados.append({"dominio": dominio, "anos": anos, "valor": round(valor, 2)})
+        validados.append({"dominio": dominio, "anos": anos, "valor": round(valor, 2), "status": "aguardando"})
 
     return validados
 
 
+# ---------------------------------------------------------------- criar pedido
+
 def criar_pedido(dados):
     """
-    Valida e cria um pedido.
+    Valida, grava o pedido e cria a cobrança no Mercado Pago.
 
     Parâmetros:
-        dados (dict): {"titular": {...}, "aceiteTermos": bool, "itens": [...]}
+        dados (dict): {"titular": {...}, "aceiteTermos": true, "itens": [...]}
 
     Retorna:
-        dict: {"pedido": código, "total": valor, "pagamentoUrl": link ou None}
+        dict: {"pedido": código, "total": valor, "pagamentoUrl": link}
     """
+    if not pagamento.pagamento_configurado():
+        raise ErroPedido("Os pagamentos ainda não estão ativos neste site.")
     if dados.get("aceiteTermos") is not True:
         raise ErroPedido("É preciso aceitar os termos e as políticas.")
 
     titular = _validar_titular(dados.get("titular") or {})
     itens = _validar_itens(dados.get("itens"))
-    total = round(sum(item["valor"] for item in itens), 2)
 
     pedido = {
-        "codigo": "P-" + secrets.token_hex(4).upper(),
-        "criadoEm": _agora(),
+        "codigo": "Z-" + secrets.token_hex(5).upper(),
+        "criadoEm": banco.agora(),
         "status": "aguardando_pagamento",
         "titular": titular,
         "itens": itens,
-        "total": total,
+        "total": round(sum(item["valor"] for item in itens), 2),
     }
+    banco.salvar_pedido(pedido)
 
-    _salvar("pedidos.json", pedido)
+    try:
+        cobranca = pagamento.criar_cobranca(pedido)
+    except ErroApi as erro:
+        print(f"[Mercado Pago] erro ao criar cobrança de {pedido['codigo']}: {erro}")
+        raise ErroPedido("Não foi possível gerar o pagamento agora. Tente novamente em instantes.")
+
+    banco.atualizar_pedido(pedido["codigo"], preferencia_id=cobranca["id"])
+
+    return {"pedido": pedido["codigo"], "total": pedido["total"], "pagamentoUrl": cobranca["link"]}
+
+
+# ---------------------------------------------------------------- pagamento
+
+def processar_notificacao(pagamento_id):
+    """
+    Chamado quando o Mercado Pago avisa sobre um pagamento.
+    Consulta o pagamento direto no Mercado Pago (nunca confia só no aviso).
+    """
+    dados = pagamento.buscar_pagamento(pagamento_id)
+    codigo = dados.get("external_reference")
+    pedido = banco.buscar_pedido(codigo) if codigo else None
+
+    if not pedido:
+        print(f"[pagamento {pagamento_id}] pedido não encontrado: {codigo}")
+        return
+
+    situacao = dados.get("status")
+
+    if situacao == "approved":
+        valor_pago = float(dados.get("transaction_amount") or 0)
+        if dados.get("currency_id") != "BRL" or valor_pago + 0.01 < pedido["total"]:
+            email_envio.avisar_admin(
+                "Pagamento com valor diferente",
+                f"Pedido {codigo}: total R$ {pedido['total']:.2f}, pago {valor_pago:.2f} "
+                f"{dados.get('currency_id')}. Verifique manualmente (pagamento {pagamento_id}).",
+            )
+            return
+
+        # Só a primeira notificação aprovada dispara o registro
+        if banco.marcar_como_pago(codigo, pagamento_id):
+            threading.Thread(target=registrar_pedido, args=(codigo,), daemon=True).start()
+
+    elif situacao in ("rejected", "cancelled", "refunded", "charged_back"):
+        if pedido["status"] == "aguardando_pagamento":
+            banco.atualizar_pedido(codigo, status="cancelado", pagamento_id=pagamento_id)
+
+
+def registrar_pedido(codigo):
+    """Registra na Dynadot todos os domínios de um pedido pago."""
+    pedido = banco.buscar_pedido(codigo)
+    contato_id = None
+
+    for item in pedido["itens"]:
+        if item.get("status") == "registrado":
+            continue
+        resultado = provedor.registrar_dominio(item["dominio"], item["anos"], pedido["titular"], contato_id)
+        contato_id = resultado["contato_id"] or contato_id
+        item["status"] = resultado["status"]
+        item["detalhe"] = resultado["detalhe"]
+
+    tudo_certo = all(item["status"] == "registrado" for item in pedido["itens"])
+    pedido["status"] = "concluido" if tudo_certo else "registro_pendente"
+    banco.atualizar_pedido(codigo, status=pedido["status"], itens=pedido["itens"])
+
+    email_envio.avisar_cliente_pedido_concluido(pedido)
+
+    resumo = "\n".join(
+        f"- {item['dominio']} ({item['anos']} ano/s): {item['status']} — {item.get('detalhe', '')}"
+        for item in pedido["itens"]
+    )
+    email_envio.avisar_admin(
+        "Nova venda" if tudo_certo else "Venda com domínio para registrar manualmente",
+        f"Pedido {codigo} — R$ {pedido['total']:.2f}\nTitular: {pedido['titular']['nome']} "
+        f"<{pedido['titular']['email']}>\n\n{resumo}",
+    )
+
+
+# ---------------------------------------------------------------- consultas
+
+TEXTO_STATUS = {
+    "aguardando_pagamento": "Aguardando pagamento",
+    "pago": "Pagamento aprovado — registrando seus domínios",
+    "concluido": "Concluído",
+    "registro_pendente": "Pagamento aprovado — registro em andamento",
+    "cancelado": "Pagamento não aprovado",
+}
+
+
+def consultar_pedido(codigo):
+    """
+    Situação de um pedido para a página "Meu pedido".
+    Não devolve dados pessoais, só os domínios e a situação.
+    """
+    pedido = banco.buscar_pedido(str(codigo or "").upper())
+    if not pedido:
+        raise ErroPedido("Pedido não encontrado.")
 
     return {
-        "pedido": pedido["codigo"],
-        "total": total,
-        "pagamentoUrl": pagamento.criar_cobranca(pedido),
+        "codigo": pedido["codigo"],
+        "status": pedido["status"],
+        "statusTexto": TEXTO_STATUS.get(pedido["status"], pedido["status"]),
+        "total": pedido["total"],
+        "itens": [
+            {"dominio": item["dominio"], "anos": item["anos"], "status": item.get("status", "aguardando")}
+            for item in pedido["itens"]
+        ],
     }
 
 
 def registrar_contato(dados):
-    """Guarda uma mensagem do formulário de contato."""
-    nome = str(dados.get("nome", "")).strip()
-    email = str(dados.get("email", "")).strip()
-    mensagem = str(dados.get("mensagem", "")).strip()
-
+    """Guarda uma mensagem do formulário de contato e avisa você por e-mail."""
     if dados.get("aceite") is not True:
         raise ErroPedido("É preciso concordar com o uso dos dados para responder.")
-    if len(nome) < 2 or not email_valido(email) or len(mensagem) < 5:
-        raise ErroPedido("Preencha nome, e-mail e mensagem.")
 
-    _salvar("contatos.json", {
-        "recebidoEm": _agora(),
-        "nome": nome[:120],
-        "email": email,
+    contato = {
+        "nome": _texto(dados, "nome", 2, 120, "Informe seu nome."),
+        "email": str(dados.get("email", "")).strip(),
         "assunto": str(dados.get("assunto", ""))[:80],
-        "mensagem": mensagem[:2000],
-    })
+        "mensagem": str(dados.get("mensagem", "")).strip()[:2000],
+    }
+    if not email_valido(contato["email"]) or len(contato["mensagem"]) < 5:
+        raise ErroPedido("Preencha e-mail e mensagem.")
+
+    banco.salvar_contato(contato)
+    email_envio.avisar_admin(
+        f"Contato: {contato['assunto']}",
+        f"De: {contato['nome']} <{contato['email']}>\n\n{contato['mensagem']}",
+    )

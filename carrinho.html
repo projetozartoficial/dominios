@@ -46,7 +46,7 @@
             <label for="email">E-mail</label>
             <input id="email" name="email" type="email" autocomplete="email" required maxlength="120"
                    aria-describedby="ajuda-email">
-            <small id="ajuda-email">Enviamos aqui a confirmação e os avisos de renovação.</small>
+            <small id="ajuda-email">Enviamos aqui a confirmação e o código do pedido.</small>
           </div>
 
           <div class="campo">
@@ -55,6 +55,49 @@
                    aria-describedby="ajuda-documento">
             <small id="ajuda-documento">Obrigatório para registrar o domínio no nome do titular.</small>
           </div>
+
+          <div class="campo">
+            <label for="telefone">Telefone com DDD</label>
+            <input id="telefone" name="telefone" type="tel" autocomplete="tel-national" inputmode="tel"
+                   required maxlength="16" placeholder="(21) 99999-9999">
+          </div>
+
+          <fieldset class="grupo-campos">
+            <legend>Endereço do titular</legend>
+            <small class="grupo-campos__ajuda">Os registros de domínio exigem o endereço de quem vai ser o dono. Por enquanto, só aceitamos endereços no Brasil.</small>
+
+            <div class="campo">
+              <label for="cep">CEP</label>
+              <input id="cep" name="cep" type="text" inputmode="numeric" autocomplete="postal-code"
+                     required maxlength="9" placeholder="00000-000">
+            </div>
+
+            <div class="campo">
+              <label for="endereco">Rua, número e complemento</label>
+              <input id="endereco" name="endereco" type="text" autocomplete="street-address" required maxlength="120">
+            </div>
+
+            <div class="campos-lado">
+              <div class="campo">
+                <label for="cidade">Cidade</label>
+                <input id="cidade" name="cidade" type="text" autocomplete="address-level2" required maxlength="80">
+              </div>
+
+              <div class="campo">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado" autocomplete="address-level1" required>
+                  <option value="">UF</option>
+                  <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+                  <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+                  <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+                  <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+                  <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+                  <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+                  <option>SP</option><option>SE</option><option>TO</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
 
           <div class="campo-check">
             <input id="aceite" name="aceite" type="checkbox" required>
@@ -66,7 +109,8 @@
             </label>
           </div>
 
-          <button type="submit" class="botao" data-botao-finalizar>Finalizar pedido</button>
+          <button type="submit" class="botao" data-botao-finalizar>Ir para o pagamento</button>
+          <p class="campo"><small>O pagamento (Pix, cartão ou boleto) é feito no site do Mercado Pago. Não guardamos dados de cartão.</small></p>
           <div data-mensagem-pedido role="alert"></div>
         </form>
       </section>

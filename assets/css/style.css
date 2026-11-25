@@ -346,6 +346,7 @@ main { flex: 1; }
 
 input[type="text"],
 input[type="email"],
+input[type="tel"],
 input[type="search"],
 select,
 textarea {
@@ -367,6 +368,30 @@ textarea {
 input::placeholder,
 textarea::placeholder {
   color: #8d94bd;
+}
+
+.grupo-campos {
+  margin: 0 0 1.1rem;
+  padding: 1rem 1rem 0.2rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+
+.grupo-campos legend {
+  padding: 0 0.4rem;
+  font-weight: 700;
+}
+
+.grupo-campos__ajuda {
+  display: block;
+  margin-bottom: 1rem;
+  color: var(--texto-suave);
+}
+
+.campos-lado {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 0.8rem;
 }
 
 .campo-check {
@@ -811,6 +836,21 @@ textarea::placeholder {
   font-size: 1.15rem;
   font-weight: 800;
 }
+
+.situacao-pedido {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--destaque);
+}
+
+.status-item {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--alerta);
+  white-space: nowrap;
+}
+
+.status-item--registrado { color: var(--sucesso); }
 
 .vazio {
   text-align: center;
